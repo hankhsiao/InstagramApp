@@ -4,6 +4,12 @@
 
 This is the starter project for the Instagram Client Project. 
 
+## Demo 
+
+**Assignment** - Oct. 27, 2015
+
+![assignment1](https://cloud.githubusercontent.com/assets/2044960/10771238/fb5f4e5a-7cac-11e5-8b4f-a123e01c5c35.gif)
+
 ## What's Included
 * <tt>com.codepath.instagram.models</tt> => We've built out the models so you can work directly with post, user, and image objects instead of having to deal with json.
 * <tt>com.codepath.instagram.helpers</tt> => Here you can find helpful classes / methods that will come in useful throughout the project. These will be referenced when they are needed.
@@ -15,5 +21,5 @@ This is the starter project for the Instagram Client Project.
 ## Finished Project
 * By the end of the project, you will have built something that looks like the following:
 
-  ![Imgur](http://i.imgur.com/4SWlsQA.gif)
-# android-instagram-master
+![Imgur](http://i.imgur.com/4SWlsQA.gif)
+
