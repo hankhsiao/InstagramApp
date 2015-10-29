@@ -1,7 +1,11 @@
 package com.codepath.instagram.helpers;
 
 import android.content.Context;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 
+import com.codepath.instagram.R;
 import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.models.InstagramSearchTag;
@@ -69,6 +73,22 @@ public class Utils {
     public static List<InstagramSearchTag> decodeSearchTagsFromJsonResponse(JSONObject jsonObject) {
         List<InstagramSearchTag> searchTags = InstagramSearchTag.fromJson(getDataJsonArray(jsonObject));
         return searchTags == null ? new ArrayList<InstagramSearchTag>() : searchTags;
+    }
+
+    public static SpannableStringBuilder concateUsername(Context context, String username, String text) {
+        if (text == null) {
+            return null;
+        }
+
+        ForegroundColorSpan blueColorSpan = new ForegroundColorSpan(
+                context.getResources().getColor(R.color.blue_text)
+        );
+
+        SpannableStringBuilder ssb = new SpannableStringBuilder(username);
+        ssb.setSpan(blueColorSpan, 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.append(" " + text);
+
+        return ssb;
     }
 
     private static JSONArray getDataJsonArray(JSONObject jsonObject) {
