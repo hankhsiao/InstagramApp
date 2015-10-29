@@ -6,7 +6,11 @@ This is the starter project for the Instagram Client Project.
 
 ## Demo 
 
-**Assignment** - Oct. 27, 2015
+**Assignment2** - Oct. 29, 2015
+
+![assignment2](https://cloud.githubusercontent.com/assets/2044960/10831491/2e227884-7e43-11e5-9021-847db4519a6e.gif)
+
+**Assignment1** - Oct. 27, 2015
 
 ![assignment1](https://cloud.githubusercontent.com/assets/2044960/10771238/fb5f4e5a-7cac-11e5-8b4f-a123e01c5c35.gif)
 
