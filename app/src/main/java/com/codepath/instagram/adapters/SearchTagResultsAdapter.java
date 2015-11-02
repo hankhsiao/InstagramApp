@@ -44,7 +44,7 @@ public class SearchTagResultsAdapter extends RecyclerView.Adapter<SearchTagResul
         holder.tag = tag;
 
         holder.tvTagname.setText(tag.tag);
-        holder.tvNumPosts.setText(tag.count);
+        holder.tvNumPosts.setText(tag.count + " posts");
     }
 
     @Override

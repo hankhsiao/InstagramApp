@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import com.codepath.instagram.R;
 import com.codepath.instagram.helpers.SmartFragmentStatePagerAdapter;
 
+import java.util.ArrayList;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -73,15 +75,6 @@ public class SearchFragment extends Fragment {
         // Give the TabLayout the ViewPager
         TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tlSlidingTabs);
         tabLayout.setupWithViewPager(viewPager);
-
-//        insertNestedFragments();
-    }
-
-    private void insertNestedFragments() {
-        getChildFragmentManager().beginTransaction()
-                .replace(R.id.vpSearchViewPager, new SearchUsersResultFragment())
-                .replace(R.id.vpSearchViewPager, new SearchTagsResultFragment())
-                .commit();
     }
 
     @Override
@@ -101,45 +94,6 @@ public class SearchFragment extends Fragment {
         listener = null;
     }
 
-    public static class SearchFragmentStatePagerAdapter extends SmartFragmentStatePagerAdapter {
-        private Context context;
-        private FragmentManager fragmentManager;
-        private static int NUM_ITEMS = 2;
-        private int[] titleIds = {
-                R.string.tab_search_user,
-                R.string.tab_search_tag
-        };
-
-        public SearchFragmentStatePagerAdapter(FragmentManager fragmentManager, Context context) {
-            super(fragmentManager);
-            this.fragmentManager = fragmentManager;
-            this.context = context;
-        }
-
-        // Returns the fragment to display for that page
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0: // Fragment # 0 - This will show FirstFragment
-                    return SearchUsersResultFragment.newInstance(0, "Page # 1");
-                case 1: // Fragment # 0 - This will show FirstFragment different title
-                    return SearchTagsResultFragment.newInstance(1, "Page # 2");
-                default:
-                    return null;
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return NUM_ITEMS;
-        }
-
-        // Returns the page title for the top indicator
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return context.getResources().getString(titleIds[position]);
-        }
-    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -152,14 +106,11 @@ public class SearchFragment extends Fragment {
                 // Fetch the data remotely
                 int position = viewPager.getCurrentItem();
                 Fragment fragment = adapter.getRegisteredFragment(position);
-//                getChildFragmentManager().beginTransaction()
-//                        .replace(R.id.vpSearchViewPager, fragment)
-//                        .commit();
 
                 if (position == 0) {
-                    ((SearchUsersResultFragment)fragment).search(query);
+                    ((SearchUsersResultFragment) fragment).search(query);
                 } else if (position == 1) {
-                    ((SearchTagsResultFragment)fragment).search(query);
+                    ((SearchTagsResultFragment) fragment).search(query);
                 }
 
                 // Reset SearchView
@@ -188,6 +139,44 @@ public class SearchFragment extends Fragment {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public static class SearchFragmentStatePagerAdapter extends SmartFragmentStatePagerAdapter {
+        private Context context;
+        private static int NUM_ITEMS = 2;
+        private int[] titleIds = {
+                R.string.tab_search_user,
+                R.string.tab_search_tag
+        };
+
+        public SearchFragmentStatePagerAdapter(FragmentManager fragmentManager, Context context) {
+            super(fragmentManager);
+            this.context = context;
+        }
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: // Fragment # 0 - This will show FirstFragment
+                    return SearchUsersResultFragment.newInstance(0, "Page # 1");
+                case 1: // Fragment # 0 - This will show FirstFragment different title
+                    return SearchTagsResultFragment.newInstance(1, "Page # 2");
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        // Returns the page title for the top indicator
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return context.getResources().getString(titleIds[position]);
         }
     }
 

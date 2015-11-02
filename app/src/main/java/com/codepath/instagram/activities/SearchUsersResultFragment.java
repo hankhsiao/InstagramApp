@@ -74,7 +74,7 @@ public class SearchUsersResultFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         // Get RecyclerView Reference
-        RecyclerView rvUsers = (RecyclerView) getParentFragment().getView().findViewById(R.id.rvUsers);
+        RecyclerView rvUsers = (RecyclerView) view.findViewById(R.id.rvUsers);
 
         // Set Adapter
         rvUsers.setAdapter(adapter);

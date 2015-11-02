@@ -94,7 +94,11 @@ public class HomeActivity extends AppCompatActivity {
                 case 1: // Fragment # 0 - This will show FirstFragment different title
                     return SearchFragment.newInstance(1, "Page # 2");
                 case 2: // Fragment # 0 - This will show FirstFragment different title
-                    return SearchFragment.newInstance(2, "Page # 3");
+                    return SearchUsersResultFragment.newInstance(2, "Page # 3");
+                case 3: // Fragment # 0 - This will show FirstFragment different title
+                    return SearchTagsResultFragment.newInstance(3, "Page # 4");
+                case 4: // Fragment # 0 - This will show FirstFragment different title
+                    return PostsFragment.newInstance(4, "Page # 5");
                 default:
                     return null;
             }
