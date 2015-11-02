@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="12dp"
+        fresco:roundedCornerRadius="15dp"
+        android:id="@+id/sdvAvatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        fresco:placeholderImage="@drawable/gray_oval" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Small Text"
+        android:id="@+id/tvUsername"
+        android:textColor="@color/gray_text"
+        android:textSize="14sp"
+        android:layout_marginLeft="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_alignTop="@+id/sdvAvatar"
+        android:layout_toRightOf="@+id/sdvAvatar"
+        android:layout_toEndOf="@+id/sdvAvatar" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Small Text"
+        android:id="@+id/tvFullname"
+        android:textColor="@color/light_gray_text"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif"
+        android:layout_alignBottom="@+id/sdvAvatar"
+        android:layout_alignLeft="@+id/tvUsername"
+        android:layout_alignStart="@+id/tvUsername" />
+
+</RelativeLayout>

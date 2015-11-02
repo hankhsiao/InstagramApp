@@ -1,59 +1,43 @@
 package com.codepath.instagram.activities;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.codepath.instagram.R;
-import com.codepath.instagram.adapters.InstagramPostsAdapter;
-import com.codepath.instagram.helpers.SimpleVerticalSpacerItemDecoration;
-import com.codepath.instagram.helpers.Utils;
-import com.codepath.instagram.models.InstagramPost;
-import com.codepath.instagram.networking.InstagramClient;
-import com.facebook.drawee.backends.pipeline.Fresco;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.apache.http.Header;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
+import com.codepath.instagram.helpers.SmartFragmentStatePagerAdapter;
 
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
-
-    private ArrayList<InstagramPost> posts;
-    InstagramPostsAdapter adapter;
+    private SmartFragmentStatePagerAdapter adapterViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fresco.initialize(this);
         setContentView(R.layout.activity_home);
 
-        // New empty posts
-        posts = new ArrayList<InstagramPost>();
+        // Get the ViewPager and set it's PagerAdapter so that it can display items
+        ViewPager viewPager = (ViewPager) findViewById(R.id.vpHomeViewPager);
+        HomeFragmentStatePagerAdapter adapter = new HomeFragmentStatePagerAdapter(getSupportFragmentManager(),
+                HomeActivity.this);
+        viewPager.setAdapter(adapter);
 
-        // Get RecyclerView Reference
-        RecyclerView rvPosts = (RecyclerView) findViewById(R.id.rvPosts);
+        // Give the TabLayout the ViewPager
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tlSlidingTabs);
+        tabLayout.setupWithViewPager(viewPager);
 
-        // Set Divider
-        rvPosts.addItemDecoration(new SimpleVerticalSpacerItemDecoration(24));
-
-        // Create Adapter
-        adapter = new InstagramPostsAdapter(this, posts);
-
-        // Set Adapter
-        rvPosts.setAdapter(adapter);
-
-        // Set Layout
-        rvPosts.setLayoutManager(new LinearLayoutManager(this));
-
-        // Fetch popular posts
-        fetchPosts();
     }
 
     @Override
@@ -78,20 +62,54 @@ public class HomeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void fetchPosts() {
-        InstagramClient.getPopularFeed(new JsonHttpResponseHandler() {
+    // Extend from SmartFragmentStatePagerAdapter now instead for more dynamic ViewPager items
+    public static class HomeFragmentStatePagerAdapter extends SmartFragmentStatePagerAdapter {
+        private Context context;
+        private static int NUM_ITEMS = 5;
+        private int[] imageResId = {
+                R.drawable.ic_home,
+                R.drawable.ic_search,
+                R.drawable.ic_capture,
+                R.drawable.ic_notifs,
+                R.drawable.ic_profile,
+        };
 
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                posts.clear(); // clear existing items if needed
-                posts.addAll(Utils.decodePostsFromJsonResponse(response)); // add new items
-                adapter.notifyDataSetChanged();
-            }
+        public HomeFragmentStatePagerAdapter(FragmentManager fragmentManager, Context context) {
+            super(fragmentManager);
+            this.context = context;
+        }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
+        // Returns total number of pages
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: // Fragment # 0 - This will show FirstFragment
+                    return PostsFragment.newInstance(0, "Page # 1");
+                case 1: // Fragment # 0 - This will show FirstFragment different title
+                    return SearchFragment.newInstance(1, "Page # 2");
+                case 2: // Fragment # 0 - This will show FirstFragment different title
+                    return SearchFragment.newInstance(2, "Page # 3");
+                default:
+                    return null;
             }
-        });
+        }
+
+        // Returns the page title for the top indicator
+        @Override
+        public CharSequence getPageTitle(int position) {
+            Drawable image = ContextCompat.getDrawable(context, imageResId[position]);
+            image.setBounds(0, 0, image.getIntrinsicWidth(), image.getIntrinsicHeight());
+            SpannableString sb = new SpannableString(" ");
+            ImageSpan imageSpan = new ImageSpan(image, ImageSpan.ALIGN_BOTTOM);
+            sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return sb;
+        }
+
     }
 }

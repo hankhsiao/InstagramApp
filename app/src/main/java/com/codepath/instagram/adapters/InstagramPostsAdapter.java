@@ -2,10 +2,7 @@ package com.codepath.instagram.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.provider.MediaStore;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
@@ -26,17 +23,7 @@ import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramImage;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.models.InstagramUser;
-import com.facebook.common.executors.CallerThreadExecutor;
-import com.facebook.common.references.CloseableReference;
-import com.facebook.datasource.DataSource;
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.common.Priority;
-import com.facebook.imagepipeline.core.ImagePipeline;
-import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
-import com.facebook.imagepipeline.image.CloseableImage;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.util.ArrayList;
 
@@ -61,7 +48,7 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         View contactView = inflater.inflate(R.layout.layout_item_post, parent, false);
 
         // Return a new holder instance
-        PostsViewHolder viewHolder = new PostsViewHolder(contactView);
+        PostsViewHolder viewHolder = new PostsViewHolder(context, contactView);
         return viewHolder;
     }
 
@@ -76,19 +63,14 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         InstagramComment comment;
         int commentCount = post.commentsCount;
 
+        holder.post = post;
+
         holder.sdvAvatar.setImageURI(Uri.parse(user.profilePictureUrl));
         holder.tvUsername.setText(user.userName);
         holder.tvTimestamp.setText(DateUtils.getRelativeTimeSpanString(post.createdTime * 1000));
         holder.sdvImage.setImageURI(Uri.parse(image.imageUrl));
 
         // Social layout
-        holder.ibtnMoreDots.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSocialPopup(v, position);
-            }
-        });
-
         holder.tvLikeCount.setText(Utils.formatNumberForDisplay(post.likesCount));
 
         // Concatenate username to caption
@@ -131,74 +113,10 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         return posts.size();
     }
 
-    private void showSocialPopup(View v, final int position) {
-        PopupMenu popup = new PopupMenu(context, v);
-        // Inflate the menu from xml
-        popup.getMenuInflater().inflate(R.menu.popup_social, popup.getMenu());
-        // Setup menu item selection
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.mnuShare:
-                        String imageUrl = posts.get(position).image.imageUrl;
-                        shareBitmap(Uri.parse(imageUrl));
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        });
-        // Show the menu
-        popup.show();
-    }
-
-    private void shareBitmap(Uri imageUri) {
-        ImagePipeline imagePipeline = Fresco.getImagePipeline();
-
-        ImageRequest imageRequest = ImageRequestBuilder
-                .newBuilderWithSource(imageUri)
-                .setRequestPriority(Priority.HIGH)
-                .setLowestPermittedRequestLevel(ImageRequest.RequestLevel.FULL_FETCH)
-                .build();
-
-        DataSource<CloseableReference<CloseableImage>> dataSource =
-                imagePipeline.fetchDecodedImage(imageRequest, this);
-
-        try {
-            dataSource.subscribe(new BaseBitmapDataSubscriber() {
-                @Override
-                public void onNewResultImpl(@Nullable Bitmap bitmap) {
-                    if (bitmap == null) {
-                        return;
-                    }
-
-                    shareBitmap(bitmap);
-                }
-
-                @Override
-                public void onFailureImpl(DataSource dataSource) {
-                    // No cleanup required here
-                }
-            }, CallerThreadExecutor.getInstance());
-        } finally {
-            if (dataSource != null) {
-                dataSource.close();
-            }
-        }
-    }
-
-    private void shareBitmap(Bitmap bitmap) {
-        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(),
-                bitmap, "Image Description", null);
-        Uri bmpUri = Uri.parse(path);
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
-        shareIntent.setType("image/*");
-
-        context.startActivity(Intent.createChooser(shareIntent, "Share Image"));
-    }
-
     public static class PostsViewHolder extends RecyclerView.ViewHolder {
+        public Context context;
+        public InstagramPost post;
+
         // User layout
         public SimpleDraweeView sdvAvatar;
         public TextView tvUsername;
@@ -215,8 +133,11 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         public Button btnViewComments;
         public LinearLayout llComments;
 
-        public PostsViewHolder(View layoutView) {
+        public PostsViewHolder(Context context, View layoutView) {
             super(layoutView);
+
+            this.context = context;
+
             // User layout
             sdvAvatar = (SimpleDraweeView) layoutView.findViewById(R.id.sdvAvatar);
             tvUsername = (TextView) layoutView.findViewById(R.id.tvUsername);
@@ -232,6 +153,38 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
             tvCaption = (TextView) layoutView.findViewById(R.id.tvCaption);
             btnViewComments = (Button) layoutView.findViewById(R.id.btnViewComments);
             llComments = (LinearLayout) layoutView.findViewById(R.id.llComments);
+
+            setupListeners();
+        }
+
+        void setupListeners() {
+            ibtnMoreDots.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showSocialPopup(v);
+                }
+            });
+        }
+
+        private void showSocialPopup(View v) {
+            PopupMenu popup = new PopupMenu(context, v);
+            // Inflate the menu from xml
+            popup.getMenuInflater().inflate(R.menu.popup_social, popup.getMenu());
+            // Setup menu item selection
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.mnuShare:
+                            String imageUrl = post.image.imageUrl;
+                            Utils.shareBitmap(context, Uri.parse(imageUrl));
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
+            });
+            // Show the menu
+            popup.show();
         }
     }
 }

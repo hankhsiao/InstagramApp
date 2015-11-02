@@ -1,6 +1,11 @@
 package com.codepath.instagram.helpers;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -10,6 +15,16 @@ import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.models.InstagramSearchTag;
 import com.codepath.instagram.models.InstagramUser;
+import com.facebook.common.executors.CallerThreadExecutor;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.common.Priority;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,6 +104,52 @@ public class Utils {
         ssb.append(" " + text);
 
         return ssb;
+    }
+
+    public static void shareBitmap(final Context context, Uri imageUri) {
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+
+        ImageRequest imageRequest = ImageRequestBuilder
+                .newBuilderWithSource(imageUri)
+                .setRequestPriority(Priority.HIGH)
+                .setLowestPermittedRequestLevel(ImageRequest.RequestLevel.FULL_FETCH)
+                .build();
+
+        DataSource<CloseableReference<CloseableImage>> dataSource =
+                imagePipeline.fetchDecodedImage(imageRequest, context);
+
+        try {
+            dataSource.subscribe(new BaseBitmapDataSubscriber() {
+                @Override
+                public void onNewResultImpl(@Nullable Bitmap bitmap) {
+                    if (bitmap == null) {
+                        return;
+                    }
+
+                    shareBitmap(context, bitmap);
+                }
+
+                @Override
+                public void onFailureImpl(DataSource dataSource) {
+                    // No cleanup required here
+                }
+            }, CallerThreadExecutor.getInstance());
+        } finally {
+            if (dataSource != null) {
+                dataSource.close();
+            }
+        }
+    }
+
+    public static void shareBitmap(Context context, Bitmap bitmap) {
+        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                bitmap, "Image Description", null);
+        Uri bmpUri = Uri.parse(path);
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+        shareIntent.setType("image/*");
+
+        context.startActivity(Intent.createChooser(shareIntent, "Share Image"));
     }
 
     private static JSONArray getDataJsonArray(JSONObject jsonObject) {

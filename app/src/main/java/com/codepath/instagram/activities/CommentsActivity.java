@@ -7,11 +7,10 @@ import android.support.v7.widget.RecyclerView;
 
 import com.codepath.instagram.R;
 import com.codepath.instagram.adapters.InstagramCommentsAdapter;
+import com.codepath.instagram.core.MainApplication;
 import com.codepath.instagram.helpers.SimpleVerticalSpacerItemDecoration;
 import com.codepath.instagram.helpers.Utils;
 import com.codepath.instagram.models.InstagramComment;
-import com.codepath.instagram.networking.InstagramClient;
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
@@ -22,11 +21,10 @@ import java.util.ArrayList;
 public class CommentsActivity extends AppCompatActivity {
     private ArrayList<InstagramComment> comments;
     private InstagramCommentsAdapter adapter;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fresco.initialize(this);
         setContentView(R.layout.activity_comments);
 
         // New empty posts
@@ -49,11 +47,12 @@ public class CommentsActivity extends AppCompatActivity {
 
         // Fetch popular posts
         String mediaId = getIntent().getStringExtra("mediaId");
+
         fetchComments(mediaId);
     }
 
     private void fetchComments(String mediaId) {
-        InstagramClient.getComments(mediaId, new JsonHttpResponseHandler() {
+        MainApplication.getRestClient().getComments(mediaId, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 comments.clear(); // clear existing items if needed

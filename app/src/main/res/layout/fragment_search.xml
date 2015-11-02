@@ -1,0 +1,19 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.codepath.instagram.activities.SearchFragment">
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tlSlidingTabs"
+        style="@style/MyCustomTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.codepath.instagram.helpers.NonSwipeableViewPager
+        android:id="@+id/vpSearchViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:background="@android:color/white" />
+
+</FrameLayout>
