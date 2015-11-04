@@ -148,17 +148,58 @@ public class InstagramClientDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: Implement this method
+        if (oldVersion != newVersion) {
+            // Simplest implementation is to drop all old tables and recreate them
+            emptyAllTables();
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_POSTS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGES);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_COMMENTS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_POST_COMMENTS);
+            onCreate(db);
+        }
     }
 
     public void emptyAllTables() {
-        // TODO: Implement this method to delete all rows from all tables
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            // Order of deletions is important when foreign key relationships exist.
+            db.delete(TABLE_POSTS, null, null);
+            db.delete(TABLE_USERS, null, null);
+            db.delete(TABLE_IMAGES, null, null);
+            db.delete(TABLE_COMMENTS, null, null);
+            db.delete(TABLE_POST_COMMENTS, null, null);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.d(TAG, "Error while trying to delete all posts and users");
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public void addInstagramPosts(List<InstagramPost> posts) {
-        // TODO: Implement this method
-        // Take a look at the helper methods addImage, addComment, etc as you implement this method
-        // It's also a good idea to do this work in a transaction
+        if (posts == null) {
+            throw new IllegalArgumentException(String.format("Attemping to add a null image to %s", DATABASE_NAME));
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        for (int i = 0, l = posts.size(); i < l; i++) {
+            InstagramPost post = posts.get(i);
+
+            ContentValues values = new ContentValues();
+            values.put(KEY_POST_MEDIA_ID, post.mediaId);
+            values.put(KEY_POST_USER_ID_FK, addOrUpdateUser(post.user));
+            values.put(KEY_POST_IMAGE_ID_FK, addImage(post.image));
+            values.put(KEY_POST_CAPTION, post.caption);
+            values.put(KEY_POST_LIKES_COUNT, post.likesCount);
+            values.put(KEY_POST_COMMENTS_COUNT, post.commentsCount);
+            values.put(KEY_POST_CREATED_TIME, post.createdTime);
+
+            db.insert(TABLE_POSTS, null, values);
+        }
+
     }
 
     // Poor man's "upsert".
@@ -167,7 +208,7 @@ public class InstagramClientDatabase extends SQLiteOpenHelper {
     // Unfortunately, there is a bug with the insertOnConflict method
     // (https://code.google.com/p/android/issues/detail?id=13045) so we need to fall back to the more
     // verbose option of querying for the user's primary key if we did an update.
-    private long addorUpdateUser(InstagramUser user) {
+    private long addOrUpdateUser(InstagramUser user) {
         if (user == null) {
             throw new IllegalArgumentException(String.format("Attemping to add a null user to %s", DATABASE_NAME));
         }
@@ -232,7 +273,7 @@ public class InstagramClientDatabase extends SQLiteOpenHelper {
         }
         SQLiteDatabase db = getWritableDatabase();
 
-        long commentUserId = addorUpdateUser(comment.user);
+        long commentUserId = addOrUpdateUser(comment.user);
 
         ContentValues values = new ContentValues();
         values.put(KEY_COMMENT_TEXT, comment.text);
